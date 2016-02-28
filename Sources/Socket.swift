@@ -55,8 +55,11 @@ public struct Socket: FileDescriptor {
         self.rawDescriptor = rawDescriptor
     }
 
-    public func bindAddress(address: UnsafeMutablePointer<Void>, length: socklen_t) -> Bool {
-        return bind(rawDescriptor, UnsafeMutablePointer<sockaddr>(address), length) == 0
+    public func bindAddress(address: SocketAddress) -> Bool {
+        var mutable = address
+        return mutable.withUnsafeMutablePointer { pointer in
+            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in)))) == 0
+        }
     }
 
     public func setOption(option: Int32, value: Int32) {
@@ -67,7 +70,14 @@ public struct Socket: FileDescriptor {
 
 public struct SocketAddress {
 
-    var underlying: sockaddr_in
+    var rawValue: sockaddr_in
+
+    mutating func withUnsafeMutablePointer<R>(proc: (UnsafeMutablePointer<sockaddr>) -> R) -> R {
+        let wrapper = { (p: UnsafeMutablePointer<()>) -> R in
+            return proc(UnsafeMutablePointer<sockaddr>(p))
+        }
+        return wrapper(&rawValue)
+    }
 
     static func htons(value: CUnsignedShort) -> CUnsignedShort {
         return value.bigEndian
@@ -75,7 +85,7 @@ public struct SocketAddress {
 
     public init(port: UInt16, addressFamily: Socket.AddressFamily = .Inet) {
 #if os(OSX)
-        underlying = sockaddr_in(
+        rawValue = sockaddr_in(
             sin_len: __uint8_t(sizeof(sockaddr_in)),
             sin_family: sa_family_t(addressFamily.rawValue),
             sin_port: SocketAddress.htons(port),
@@ -83,7 +93,7 @@ public struct SocketAddress {
             sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
         )
 #else
-        underlying = sockaddr_in(
+        rawValue = sockaddr_in(
             sin_family: sa_family_t(addressFamily.rawValue),
             sin_port: SocketAddress.htons(port),
             sin_addr: in_addr(s_addr: in_addr_t(0)),
