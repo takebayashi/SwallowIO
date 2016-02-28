@@ -33,9 +33,9 @@ extension Reader {
 
 }
 
-class BufferReader: Reader {
+class BufferReader<E>: Reader {
 
-    typealias Entry = UInt8
+    typealias Entry = E
 
     var buffer: [Entry]
 
