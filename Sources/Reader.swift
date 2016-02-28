@@ -19,9 +19,9 @@ public protocol Reader {
 }
 
 
-extension Reader {
+public extension Reader {
 
-    mutating func read(maxLength: Int) throws -> [Entry] {
+    public mutating func read(maxLength: Int) throws -> [Entry] {
         var entries = [Entry]()
         for _ in 0..<maxLength {
             if let entry = try self.read() {
@@ -33,17 +33,17 @@ extension Reader {
 
 }
 
-class BufferReader<E>: Reader {
+public class BufferReader<E>: Reader {
 
-    typealias Entry = E
+    public typealias Entry = E
 
     var buffer: [Entry]
 
-    init(buffer: [Entry]) {
+    public init(buffer: [Entry]) {
         self.buffer = buffer
     }
 
-    func read() throws -> Entry? {
+    public func read() throws -> Entry? {
         if let first = buffer.first {
             buffer = [Entry](buffer[1..<buffer.endIndex])
             return first
@@ -53,15 +53,15 @@ class BufferReader<E>: Reader {
 
 }
 
-class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
+public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
-    typealias Entry = [R.Entry]
+    public typealias Entry = [R.Entry]
 
     var reader: R
 
     let delimiter: R.Entry
 
-    init(reader: R, delimiter: R.Entry) {
+    public init(reader: R, delimiter: R.Entry) {
         self.reader = reader
         self.delimiter = delimiter
     }
@@ -87,7 +87,7 @@ class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
         return nil
     }
 
-    func read() throws -> Entry? {
+    public func read() throws -> Entry? {
         if let line = flush() {
             return line
         }
@@ -115,9 +115,9 @@ class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
 }
 
-class LineBufferedReader<R: Reader where R.Entry == Byte>: BufferedReader<R> {
+public class LineBufferedReader<R: Reader where R.Entry == Byte>: BufferedReader<R> {
 
-    init(reader: R, delimiter: Byte = Byte(10)) {
+    public init(reader: R, delimiter: Byte = Byte(10)) {
         super.init(reader: reader, delimiter: delimiter)
     }
 

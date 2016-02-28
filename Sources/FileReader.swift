@@ -4,21 +4,21 @@
     import Glibc
 #endif
 
-class FileReader: Reader {
+public class FileReader: Reader {
 
-    typealias Entry = UInt8
+    public typealias Entry = UInt8
 
     let fileDescriptor: FileDescriptor
 
-    init(fileDescriptor: FileDescriptor) {
+    public init(fileDescriptor: FileDescriptor) {
         self.fileDescriptor = fileDescriptor
     }
 
-    func read() throws -> Entry? {
+    public func read() throws -> Entry? {
         return try read(1).first
     }
 
-    func read(maxLength: Int) throws -> [Entry] {
+    public func read(maxLength: Int) throws -> [Entry] {
         let buffer = UnsafeMutablePointer<Entry>.alloc(maxLength)
         memset(buffer, 0, maxLength)
         let size = recv(fileDescriptor.rawDescriptor, buffer, maxLength, 0)
