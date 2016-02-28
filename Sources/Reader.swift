@@ -115,9 +115,9 @@ class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
 }
 
-class LineBufferedReader<R: Reader where R.Entry == UInt8>: BufferedReader<R> {
+class LineBufferedReader<R: Reader where R.Entry == Byte>: BufferedReader<R> {
 
-    init(reader: R, delimiter: UInt8 = UInt8(10)) {
+    init(reader: R, delimiter: Byte = Byte(10)) {
         super.init(reader: reader, delimiter: delimiter)
     }
 
