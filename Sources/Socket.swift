@@ -4,7 +4,7 @@
     import Glibc
 #endif
 
-public struct Socket {
+public struct Socket: FileDescriptor {
 
     public enum AddressFamily {
         case Inet
@@ -42,26 +42,26 @@ public struct Socket {
         }
     }
 
-    var raw: Int32
+    public let rawDescriptor: Int32
 
     public init?(domain: AddressFamily = .Inet, type: Type = .Stream, proto: Int32 = 0) {
-        raw = socket(domain.rawValue, type.rawValue, proto)
-        if raw <= 0 {
+        rawDescriptor = socket(domain.rawValue, type.rawValue, proto)
+        if rawDescriptor <= 0 {
             return nil
         }
     }
 
-    public init(raw: Int32) {
-        self.raw = raw
+    public init(rawDescriptor: Int32) {
+        self.rawDescriptor = rawDescriptor
     }
 
     public func bindAddress(address: UnsafeMutablePointer<Void>, length: socklen_t) -> Bool {
-        return bind(raw, UnsafeMutablePointer<sockaddr>(address), length) == 0
+        return bind(rawDescriptor, UnsafeMutablePointer<sockaddr>(address), length) == 0
     }
 
     public func setOption(option: Int32, value: Int32) {
         var val = value
-        setsockopt(raw, SOL_SOCKET, option, &val, socklen_t(sizeof(Int32)))
+        setsockopt(rawDescriptor, SOL_SOCKET, option, &val, socklen_t(sizeof(Int32)))
     }
 }
 
