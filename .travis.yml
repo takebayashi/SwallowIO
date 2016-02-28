@@ -1,0 +1,9 @@
+sudo: required
+dist: trusty
+before_install:
+  - wget https://swift.org/builds/ubuntu1404/swift-2.2-SNAPSHOT-2016-01-11-a/swift-2.2-SNAPSHOT-2016-01-11-a-ubuntu14.04.tar.gz
+  - tar xzf swift-2.2-SNAPSHOT-2016-01-11-a-ubuntu14.04.tar.gz
+  - sudo rsync -a swift-2.2-SNAPSHOT-2016-01-11-a-ubuntu14.04/usr/ /usr/local/
+  - rm -rf swift-2.2-SNAPSHOT-2016-01-11-a-ubuntu14.04
+script:
+  - swift build -v
