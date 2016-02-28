@@ -4,6 +4,10 @@
     import Glibc
 #endif
 
+enum SocketError: ErrorType {
+    case GenericError(code: Int32)
+}
+
 public struct Socket: FileDescriptor {
 
     public enum AddressFamily {
@@ -55,11 +59,43 @@ public struct Socket: FileDescriptor {
         self.rawDescriptor = rawDescriptor
     }
 
-    public func bindAddress(address: SocketAddress) -> Bool {
+    public func bindAddress(address: SocketAddress) throws {
         var mutable = address
-        return mutable.withUnsafeMutablePointer { pointer in
-            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in)))) == 0
+        let result = mutable.withUnsafeMutablePointer { pointer in
+            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in))))
         }
+        if result != 0 {
+            throw SocketError.GenericError(code: result)
+        }
+    }
+
+    public func listenConnection(backlog: Int32) throws {
+        let result = listen(rawDescriptor, backlog)
+        if result != 0 {
+            throw SocketError.GenericError(code: result)
+        }
+    }
+
+    public func acceptClient() throws -> (Socket, SocketAddress) {
+        var addr = sockaddr_in()
+        var addrlen = socklen_t(sizeof(socklen_t))
+        let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
+            return accept(self.rawDescriptor, UnsafeMutablePointer<sockaddr>(addrPtr), addrlenPtr)
+        }
+        let fd = wrapper(&addr, &addrlen)
+        if fd < 0 {
+            throw SocketError.GenericError(code: fd)
+        }
+        return (Socket(rawDescriptor: fd), SocketAddress(rawValue: addr))
+    }
+
+
+    public func close() {
+        #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
+            Darwin.close(rawDescriptor)
+        #else
+            Glibc.close(rawDescriptor)
+        #endif
     }
 
     public func setOption(option: Int32, value: Int32) {
@@ -84,7 +120,7 @@ public struct SocketAddress {
     }
 
     public init(port: UInt16, addressFamily: Socket.AddressFamily = .Inet) {
-#if os(OSX)
+#if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
         rawValue = sockaddr_in(
             sin_len: __uint8_t(sizeof(sockaddr_in)),
             sin_family: sa_family_t(addressFamily.rawValue),
@@ -100,6 +136,10 @@ public struct SocketAddress {
             sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
         )
 #endif
+    }
+
+    public init(rawValue: sockaddr_in) {
+        self.rawValue = rawValue
     }
 
 }
