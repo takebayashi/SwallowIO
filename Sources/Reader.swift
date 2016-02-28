@@ -50,14 +50,17 @@ class BufferReader: Reader {
 
 let LF = UInt8(10)
 
-class BufferedReader<R: Reader where R.Entry == UInt8>: Reader {
+class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
     typealias Entry = [R.Entry]
 
     var reader: R
 
-    init(reader: R) {
+    let delimiter: R.Entry
+
+    init(reader: R, delimiter: R.Entry) {
         self.reader = reader
+        self.delimiter = delimiter
     }
 
     var buffer = Entry()
@@ -67,7 +70,7 @@ class BufferedReader<R: Reader where R.Entry == UInt8>: Reader {
     func flush() -> Entry? {
         let size = buffer.count
         for i in 0..<size {
-            if buffer[i] == LF {
+            if buffer[i] == delimiter {
                 let line = Entry(buffer[0...i])
                 if i + 1 >= size {
                     buffer = []
