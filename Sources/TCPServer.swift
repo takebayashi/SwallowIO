@@ -1,23 +1,18 @@
-#if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
-    import Darwin
-#elseif os(Linux)
-    import Glibc
-#endif
-
 public class TCPServer {
 
     let socket: Socket
 
-    public init(socket: Socket) {
+    public init?(socket: Socket, address: SocketAddress) {
         self.socket = socket
+        do {
+            try socket.bindAddress(address)
+            try socket.listenConnection(10)
+        } catch {
+            return nil
+        }
     }
 
-    public func bindAndListen(address: SocketAddress, handler: (Socket, SocketAddress) -> Bool) throws {
-        try socket.bindAddress(address)
-        try socket.listenConnection(10)
-        defer {
-            socket.close()
-        }
+    public func acceptClient(handler: (Socket, SocketAddress) -> Bool) throws {
         while true {
             let (clientSocket, clientAddress) = try socket.acceptClient()
             defer {
@@ -27,6 +22,10 @@ public class TCPServer {
                 break
             }
         }
+    }
+
+    public func close() {
+        socket.close()
     }
 
 }
