@@ -53,8 +53,6 @@ class BufferReader: Reader {
 
 }
 
-let LF = UInt8(10)
-
 class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
     typealias Entry = [R.Entry]
@@ -113,6 +111,14 @@ class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
             return line
         }
         return nil
+    }
+
+}
+
+class LineBufferedReader<R: Reader where R.Entry == UInt8>: BufferedReader<R> {
+
+    init(reader: R, delimiter: UInt8 = UInt8(10)) {
+        super.init(reader: reader, delimiter: delimiter)
     }
 
 }
