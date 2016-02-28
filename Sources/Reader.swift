@@ -18,6 +18,21 @@ public protocol Reader {
 
 }
 
+
+extension Reader {
+
+    mutating func read(maxLength: Int) throws -> [Entry] {
+        var entries = [Entry]()
+        for _ in 0..<maxLength {
+            if let entry = try self.read() {
+                entries.append(entry)
+            }
+        }
+        return entries
+    }
+
+}
+
 class BufferReader: Reader {
 
     typealias Entry = UInt8
@@ -34,16 +49,6 @@ class BufferReader: Reader {
             return first
         }
         return nil
-    }
-
-    func read(maxLength: Int) throws -> [Entry] {
-        var bytes = [Entry]()
-        for _ in 0..<maxLength {
-            if let byte = try self.read() {
-                bytes.append(byte)
-            }
-        }
-        return bytes
     }
 
 }
@@ -108,19 +113,6 @@ class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
             return line
         }
         return nil
-    }
-
-    func read(maxLength: Int) throws -> [Entry] {
-        var lines = [Entry]()
-        for _ in 0..<maxLength {
-            if let line = try read() {
-                lines.append(line)
-            }
-            else {
-                break
-            }
-        }
-        return lines
     }
 
 }
