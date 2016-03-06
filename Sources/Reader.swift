@@ -33,6 +33,21 @@ public extension Reader {
 
 }
 
+public extension Reader where Entry: Equatable {
+
+    public mutating func read(until suffix: [Entry]) throws -> [Entry] {
+        var buffer = [Entry]()
+        while let entry = try read() {
+            buffer.append(entry)
+            if [Entry](buffer.suffix(suffix.count)) == suffix {
+                break
+            }
+        }
+        return buffer
+    }
+
+}
+
 public class BufferReader<E>: Reader {
 
     public typealias Entry = E
