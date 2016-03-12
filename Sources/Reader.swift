@@ -8,20 +8,20 @@ enum ReaderError: ErrorType {
     case GenericError(error: Int32)
 }
 
-public protocol Reader {
+public protocol Reader: class {
 
     associatedtype Entry
 
-    mutating func read() throws -> Entry?
+    func read() throws -> Entry?
 
-    mutating func read(maxLength: Int) throws -> [Entry]
+    func read(maxLength: Int) throws -> [Entry]
 
 }
 
 
 public extension Reader {
 
-    public mutating func read(maxLength: Int) throws -> [Entry] {
+    public func read(maxLength: Int) throws -> [Entry] {
         var entries = [Entry]()
         for _ in 0..<maxLength {
             if let entry = try self.read() {
@@ -35,7 +35,7 @@ public extension Reader {
 
 public extension Reader where Entry: Equatable {
 
-    public mutating func read(until suffix: [Entry]) throws -> [Entry] {
+    public func read(until suffix: [Entry]) throws -> [Entry] {
         var buffer = [Entry]()
         while let entry = try read() {
             buffer.append(entry)
