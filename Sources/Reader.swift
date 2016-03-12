@@ -18,7 +18,6 @@ public protocol Reader: class {
 
 }
 
-
 public extension Reader {
 
     public func read(maxLength: Int) throws -> [Entry] {
@@ -35,11 +34,11 @@ public extension Reader {
 
 public extension Reader where Entry: Equatable {
 
-    public func read(until suffix: [Entry]) throws -> [Entry] {
+    public func readUntil(token: [Entry]) throws -> [Entry] {
         var buffer = [Entry]()
         while let entry = try read() {
             buffer.append(entry)
-            if [Entry](buffer.suffix(suffix.count)) == suffix {
+            if [Entry](buffer.suffix(token.count)) == token {
                 break
             }
         }
