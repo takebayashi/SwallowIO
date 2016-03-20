@@ -4,7 +4,7 @@
     import Glibc
 #endif
 
-public enum SocketError: ErrorType {
+public enum SocketError: ErrorProtocol {
     case GenericError(code: Int32)
 }
 

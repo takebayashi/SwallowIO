@@ -1,6 +1,6 @@
-extension CollectionType where Generator.Element: Equatable, SubSequence == Self {
+extension Collection where Iterator.Element: Equatable, SubSequence == Self {
 
-    func trimLeft(target: Generator.Element, maxCount: Int = -1) -> Self {
+    func trimLeft(target: Iterator.Element, maxCount: Int = -1) -> Self {
         if let first = self.first {
             if first == target {
                 let sub = dropFirst()
@@ -16,9 +16,9 @@ extension CollectionType where Generator.Element: Equatable, SubSequence == Self
 
 }
 
-extension CollectionType where Generator.Element: Equatable, SubSequence == Self, Index: BidirectionalIndexType {
+extension Collection where Iterator.Element: Equatable, SubSequence == Self, Index: BidirectionalIndex {
 
-    func trimRight(target: Generator.Element, maxCount: Int = -1) -> Self {
+    func trimRight(target: Iterator.Element, maxCount: Int = -1) -> Self {
         if let last = self.last {
             if last == target {
                 let sub = dropLast()

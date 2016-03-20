@@ -1,11 +1,11 @@
 public typealias Byte = UInt8
 public typealias Bytes = [Byte]
 
-public extension CollectionType where Generator.Element == Byte {
+public extension Collection where Iterator.Element == Byte {
 
     public func toString() -> String? {
         return withCCharBufferPointer { buffer in
-            return String.fromCString(buffer.baseAddress)
+            return String(cString: buffer.baseAddress)
         }
     }
 

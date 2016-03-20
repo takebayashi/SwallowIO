@@ -45,7 +45,7 @@ public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
             else if chunk.count < batch {
                 reading = false
             }
-            buffer.appendContentsOf(chunk)
+            buffer.append(contentsOf: chunk)
             if let line = flush() {
                 return line
             }
