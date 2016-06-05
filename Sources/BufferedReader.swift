@@ -1,3 +1,5 @@
+import C7
+
 public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
     public typealias Entry = [R.Entry]
@@ -60,9 +62,9 @@ public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
 }
 
-public class LineBufferedReader<R: Reader where R.Entry == Byte>: BufferedReader<R> {
+public class LineBufferedReader<R: Reader where R.Entry == C7.Byte>: BufferedReader<R> {
 
-    override public init(reader: R, delimiter: R.Entry = Byte(10)) {
+    override public init(reader: R, delimiter: R.Entry = C7.Byte(10)) {
         super.init(reader: reader, delimiter: delimiter)
     }
 

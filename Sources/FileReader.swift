@@ -4,9 +4,11 @@
     import Glibc
 #endif
 
+import C7
+
 public class FileReader: Reader {
 
-    public typealias Entry = UInt8
+    public typealias Entry = C7.Byte
 
     let fileDescriptor: FileDescriptor
 
