@@ -5,8 +5,8 @@ public class TCPServer {
     public init?(socket: Socket, address: SocketAddress) {
         self.socket = socket
         do {
-            try socket.bindAddress(address)
-            try socket.listenConnection(10)
+            try socket.bindAddress(address: address)
+            try socket.listenConnection(backlog: 10)
         } catch {
             return nil
         }

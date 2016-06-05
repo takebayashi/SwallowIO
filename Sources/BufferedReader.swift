@@ -38,7 +38,7 @@ public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
         }
         let batch = 128
         while reading {
-            let chunk = try reader.read(batch)
+            let chunk = try reader.read(maxLength: batch)
             if chunk.count == 0 {
                 reading = false
             }
@@ -62,7 +62,7 @@ public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
 public class LineBufferedReader<R: Reader where R.Entry == Byte>: BufferedReader<R> {
 
-    public init(reader: R, delimiter: Byte = Byte(10)) {
+    override public init(reader: R, delimiter: R.Entry = Byte(10)) {
         super.init(reader: reader, delimiter: delimiter)
     }
 

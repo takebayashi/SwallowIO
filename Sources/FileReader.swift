@@ -15,7 +15,7 @@ public class FileReader: Reader {
     }
 
     public func read() throws -> Entry? {
-        return try read(1).first
+        return try read(maxLength: 1).first
     }
 
     public func read(maxLength: Int) throws -> [Entry] {

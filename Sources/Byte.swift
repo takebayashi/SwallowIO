@@ -5,7 +5,10 @@ public extension Collection where Iterator.Element == Byte {
 
     public func toString() -> String? {
         return withCCharBufferPointer { buffer in
-            return String(cString: buffer.baseAddress)
+            if let base = buffer.baseAddress {
+                return String(cString: base)
+            }
+            return nil
         }
     }
 

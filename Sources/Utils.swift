@@ -8,7 +8,7 @@ extension Collection where Iterator.Element: Equatable, SubSequence == Self {
                     return sub
                 }
                 let nextCount = maxCount > 1 ? maxCount - 1 : -1
-                return sub.trimLeft(target, maxCount: nextCount)
+                return sub.trimLeft(target: target, maxCount: nextCount)
             }
         }
         return self
@@ -16,7 +16,7 @@ extension Collection where Iterator.Element: Equatable, SubSequence == Self {
 
 }
 
-extension Collection where Iterator.Element: Equatable, SubSequence == Self, Index: BidirectionalIndex {
+extension BidirectionalCollection where Iterator.Element: Equatable, SubSequence == Self {
 
     func trimRight(target: Iterator.Element, maxCount: Int = -1) -> Self {
         if let last = self.last {
@@ -26,7 +26,7 @@ extension Collection where Iterator.Element: Equatable, SubSequence == Self, Ind
                     return sub
                 }
                 let nextCount = maxCount > 1 ? maxCount - 1 : -1
-                return sub.trimRight(target, maxCount: nextCount)
+                return sub.trimRight(target: target, maxCount: nextCount)
             }
         }
         return self
@@ -38,7 +38,10 @@ extension String {
 
     func chomp() -> String {
         let spaces = [Character(UnicodeScalar(10)), Character(UnicodeScalar(13))]
-        return String(spaces.reduce(self.characters) { $0.trimRight($1) })
+        let reduced = spaces.reduce(self.characters) { (s: String.CharacterView, c: Character) in
+            return s.trimRight(target: c)
+        }
+        return String(reduced)
     }
 
 }
