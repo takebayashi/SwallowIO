@@ -131,7 +131,7 @@ public struct SocketAddress {
 #else
         rawValue = sockaddr_in(
             sin_family: sa_family_t(addressFamily.rawValue),
-            sin_port: SocketAddress.htons(port),
+            sin_port: SocketAddress.htons(value: port),
             sin_addr: in_addr(s_addr: in_addr_t(0)),
             sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
         )
