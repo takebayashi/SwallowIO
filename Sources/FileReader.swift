@@ -21,7 +21,7 @@ public class FileReader: Reader {
     }
 
     public func read(maxLength: Int) throws -> [Entry] {
-        let buffer = UnsafeMutablePointer<Entry>(allocatingCapacity: maxLength)
+        let buffer = UnsafeMutablePointer<Entry>.allocate(capacity: maxLength)
         memset(buffer, 0, maxLength)
         let size = recv(fileDescriptor.rawDescriptor, buffer, maxLength, 0)
         if size < 0 {
@@ -31,7 +31,7 @@ public class FileReader: Reader {
         for i in 0..<size {
             bytes.append(buffer[i])
         }
-        buffer.deallocateCapacity(maxLength)
+        buffer.deallocate(capacity: maxLength)
         return bytes
     }
 

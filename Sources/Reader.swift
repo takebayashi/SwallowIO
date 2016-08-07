@@ -4,7 +4,7 @@
     import Glibc
 #endif
 
-enum ReaderError: ErrorProtocol {
+enum ReaderError: Error {
     case GenericError(error: Int32)
 }
 
