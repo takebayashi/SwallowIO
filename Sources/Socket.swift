@@ -64,7 +64,7 @@ public struct Socket: FileDescriptor {
     public func bindAddress(address: SocketAddress) throws {
         var mutable = address
         let result = mutable.withUnsafeMutablePointer { pointer in
-            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in))))
+            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in.self))))
         }
         if result != 0 {
             throw SocketError.GenericError(code: result)
@@ -80,7 +80,7 @@ public struct Socket: FileDescriptor {
 
     public func acceptClient() throws -> (Socket, SocketAddress) {
         var addr = sockaddr_in()
-        var addrlen = socklen_t(sizeof(socklen_t))
+        var addrlen = socklen_t(sizeof(socklen_t.self))
         let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
             return accept(self.rawDescriptor, UnsafeMutablePointer<sockaddr>(addrPtr), addrlenPtr)
         }
@@ -102,7 +102,7 @@ public struct Socket: FileDescriptor {
 
     public func setOption(option: Int32, value: Int32) {
         var val = value
-        setsockopt(rawDescriptor, SOL_SOCKET, option, &val, socklen_t(sizeof(Int32)))
+        setsockopt(rawDescriptor, SOL_SOCKET, option, &val, socklen_t(sizeof(Int32.self)))
     }
 }
 
@@ -124,7 +124,7 @@ public struct SocketAddress {
     public init(port: UInt16, addressFamily: Socket.AddressFamily = .Inet) {
 #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
         rawValue = sockaddr_in(
-            sin_len: __uint8_t(sizeof(sockaddr_in)),
+            sin_len: __uint8_t(sizeof(sockaddr_in.self)),
             sin_family: sa_family_t(addressFamily.rawValue),
             sin_port: SocketAddress.htons(value: port),
             sin_addr: in_addr(s_addr: in_addr_t(0)),
