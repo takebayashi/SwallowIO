@@ -1,9 +1,14 @@
-public class TCPServer {
+public protocol TCPServer {
+    associatedtype SocketType: Socket
+}
 
-    let socket: Socket
-    let acceptor: SocketAcceptor
+public class BlockingTCPServer: TCPServer {
+    public typealias SocketType = PosixSocket
 
-    public init?(socket: Socket, address: SocketAddress) {
+    let socket: SocketType
+    let acceptor: BlockingSocketAcceptor
+
+    public init?(socket: SocketType, address: SocketAddress) {
         self.socket = socket
         self.acceptor = BlockingSocketAcceptor()
         do {

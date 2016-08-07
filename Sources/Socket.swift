@@ -10,7 +10,13 @@ public enum SocketError: Error {
     case GenericError(code: Int32)
 }
 
-public struct Socket: FileDescriptor {
+public protocol Socket: FileDescriptor {
+    func bindAddress(address: SocketAddress) throws
+    func listenConnection(backlog: Int32) throws
+    func close() throws
+}
+
+public struct PosixSocket: Socket {
 
     public enum AddressFamily {
         case Inet
@@ -78,7 +84,7 @@ public struct Socket: FileDescriptor {
         }
     }
 
-    public func acceptClient() throws -> (Socket, SocketAddress) {
+    public func acceptClient() throws -> (PosixSocket, SocketAddress) {
         var addr = sockaddr_in()
         var addrlen = socklen_t(sizeof(socklen_t.self))
         let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
@@ -88,7 +94,7 @@ public struct Socket: FileDescriptor {
         if fd < 0 {
             throw SocketError.GenericError(code: fd)
         }
-        return (Socket(rawDescriptor: fd), SocketAddress(rawValue: addr))
+        return (PosixSocket(rawDescriptor: fd), SocketAddress(rawValue: addr))
     }
 
 
@@ -125,7 +131,7 @@ public struct SocketAddress {
         return value.bigEndian
     }
 
-    public init(port: UInt16, addressFamily: Socket.AddressFamily = .Inet) {
+    public init(port: UInt16, addressFamily: PosixSocket.AddressFamily = .Inet) {
 #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
         rawValue = sockaddr_in(
             sin_len: __uint8_t(sizeof(sockaddr_in.self)),

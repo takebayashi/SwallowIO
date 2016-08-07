@@ -8,7 +8,7 @@ import C7
     let syscall_send = Glibc.send
 #endif
 
-extension Socket: AsyncSending {
+extension FileDescriptor {
     
     public func send(_ data: Data,
                      timingOut deadline: Double,
