@@ -1,9 +1,11 @@
 public class TCPServer {
 
     let socket: Socket
+    let acceptor: SocketAcceptor
 
     public init?(socket: Socket, address: SocketAddress) {
         self.socket = socket
+        self.acceptor = BlockingSocketAcceptor()
         do {
             try socket.bindAddress(address: address)
             try socket.listenConnection(backlog: 10)
@@ -12,14 +14,9 @@ public class TCPServer {
         }
     }
 
-    public func acceptClient(handler: (Socket, SocketAddress) -> Bool) throws {
+    public func acceptClient(handler: (Socket, SocketAddress) -> ()) throws {
         while true {
-            let (clientSocket, clientAddress) = try socket.acceptClient()
-            if !handler(clientSocket, clientAddress) {
-                try clientSocket.close()
-                break
-            }
-            try clientSocket.close()
+            try self.acceptor.accept(socket: self.socket, handler: handler)
         }
     }
 
