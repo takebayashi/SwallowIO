@@ -10,13 +10,19 @@ public enum SocketError: Error {
     case GenericError(code: Int32)
 }
 
+public protocol SocketAddress  {
+}
+
 public protocol Socket: FileDescriptor {
-    func bindAddress(address: SocketAddress) throws
+    associatedtype AddressType: SocketAddress
+    
+    func bindAddress(address: AddressType) throws
     func listenConnection(backlog: Int32) throws
     func close() throws
 }
 
 public struct PosixSocket: Socket {
+    public typealias AddressType = PosixSocketAddress
 
     public enum AddressFamily {
         case Inet
@@ -67,7 +73,7 @@ public struct PosixSocket: Socket {
         self.rawDescriptor = rawDescriptor
     }
 
-    public func bindAddress(address: SocketAddress) throws {
+    public func bindAddress(address: PosixSocketAddress) throws {
         var mutable = address
         let result = mutable.withUnsafeMutablePointer { pointer in
             return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in.self))))
@@ -84,7 +90,7 @@ public struct PosixSocket: Socket {
         }
     }
 
-    public func acceptClient() throws -> (PosixSocket, SocketAddress) {
+    public func acceptClient() throws -> (PosixSocket, PosixSocketAddress) {
         var addr = sockaddr_in()
         var addrlen = socklen_t(sizeof(socklen_t.self))
         let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
@@ -94,7 +100,7 @@ public struct PosixSocket: Socket {
         if fd < 0 {
             throw SocketError.GenericError(code: fd)
         }
-        return (PosixSocket(rawDescriptor: fd), SocketAddress(rawValue: addr))
+        return (PosixSocket(rawDescriptor: fd), PosixSocketAddress(rawValue: addr))
     }
 
 
@@ -116,7 +122,7 @@ public struct PosixSocket: Socket {
     }
 }
 
-public struct SocketAddress {
+public struct PosixSocketAddress: SocketAddress {
 
     var rawValue: sockaddr_in
 
@@ -136,7 +142,7 @@ public struct SocketAddress {
         rawValue = sockaddr_in(
             sin_len: __uint8_t(sizeof(sockaddr_in.self)),
             sin_family: sa_family_t(addressFamily.rawValue),
-            sin_port: SocketAddress.htons(value: port),
+            sin_port: PosixSocketAddress.htons(value: port),
             sin_addr: in_addr(s_addr: in_addr_t(0)),
             sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
         )
