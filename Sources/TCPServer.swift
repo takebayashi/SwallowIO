@@ -15,17 +15,16 @@ public class TCPServer {
     public func acceptClient(handler: (Socket, SocketAddress) -> Bool) throws {
         while true {
             let (clientSocket, clientAddress) = try socket.acceptClient()
-            defer {
-                clientSocket.close()
-            }
             if !handler(clientSocket, clientAddress) {
+                try clientSocket.close()
                 break
             }
+            try clientSocket.close()
         }
     }
 
-    public func close() {
-        socket.close()
+    public func close() throws {
+        try socket.close()
     }
 
 }

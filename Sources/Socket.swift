@@ -92,12 +92,16 @@ public struct Socket: FileDescriptor {
     }
 
 
-    public func close() {
+    public func close() throws {
+        var result: Int32
         #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
-            Darwin.close(rawDescriptor)
+            result = Darwin.close(rawDescriptor)
         #else
-            Glibc.close(rawDescriptor)
+            result = Glibc.close(rawDescriptor)
         #endif
+        if result != 0 {
+            throw SocketError.GenericError(code: errno)
+        }
     }
 
     public func setOption(option: Int32, value: Int32) {
