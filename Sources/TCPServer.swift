@@ -1,18 +1,16 @@
 public protocol TCPServer {
     associatedtype SocketType: Socket
-    associatedtype AddressType: SocketAddress
 }
 
 public class BlockingTCPServer: TCPServer {
     public typealias SocketType = PosixSocket
-    public typealias AddressType = SocketType.AddressType
 
     let socket: SocketType
     let acceptor: BlockingSocketAcceptor
 
-    public init?(socket: SocketType, address: AddressType) {
+    public init?(socket: SocketType, address: SocketType.AddressType) throws {
         self.socket = socket
-        self.acceptor = BlockingSocketAcceptor()
+        self.acceptor = try BlockingSocketAcceptor(socket: socket)
         do {
             try socket.bindAddress(address: address)
             try socket.listenConnection(backlog: 10)
@@ -21,9 +19,18 @@ public class BlockingTCPServer: TCPServer {
         }
     }
 
-    public func acceptClient(handler: (Socket: PosixSocket, SocketAddress) -> ()) throws {
+    public func acceptClient(handler: (SocketType, SocketType.AddressType) throws -> ()) throws {
         while true {
-            try self.acceptor.accept(socket: self.socket, handler: handler)
+            let (clientSocket, clientAddress) = try acceptor.accept()
+            defer {
+                do {
+                    try clientSocket.close()
+                }
+                catch {
+                    // ignore
+                }
+            }
+            try handler(clientSocket, clientAddress)
         }
     }
 
