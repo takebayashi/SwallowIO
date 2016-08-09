@@ -21,7 +21,7 @@ public protocol Socket: FileDescriptor {
     func close() throws
 }
 
-public struct PosixSocket: Socket {
+public class PosixSocket: Socket {
     public typealias AddressType = PosixSocketAddress
 
     public enum AddressFamily {
@@ -61,6 +61,8 @@ public struct PosixSocket: Socket {
     }
 
     public let rawDescriptor: Int32
+    
+    public private(set) var closed: Bool = false
 
     public init?(domain: AddressFamily = .Inet, type: Semantics = .Stream, proto: Int32 = 0) {
         rawDescriptor = socket(domain.rawValue, type.rawValue, proto)
@@ -114,6 +116,7 @@ public struct PosixSocket: Socket {
         if result != 0 {
             throw SocketError.GenericError(code: errno)
         }
+        closed = true
     }
 
     public func setOption(option: Int32, value: Int32) {

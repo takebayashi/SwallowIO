@@ -5,6 +5,6 @@
 #endif
 import C7
 
-public protocol FileDescriptor: AsyncSending {
+public protocol FileDescriptor: Stream, Closable {
     var rawDescriptor: Int32 { get }
 }
