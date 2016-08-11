@@ -19,7 +19,7 @@ extension FileDescriptor {
             try data.withUnsafeBufferPointer { bytes in
                 let result = syscall_send(self.rawDescriptor, bytes.baseAddress, bytes.count, 0)
                 if result < 0 {
-                    throw SocketError.GenericError(code: errno)
+                    throw IOError.GenericError(code: errno)
                 }
             }
         }
@@ -35,7 +35,7 @@ extension FileDescriptor {
         try data.withUnsafeBufferPointer { bytes in
             let result = syscall_send(self.rawDescriptor, bytes.baseAddress, bytes.count, 0)
             if result < 0 {
-                throw SocketError.GenericError(code: errno)
+                throw IOError.GenericError(code: errno)
             }
         }
     }
@@ -53,7 +53,7 @@ extension FileDescriptor {
             memset(buffer, 0, byteCount)
             let size = recv(self.rawDescriptor, buffer, byteCount, 0)
             if size < 0 {
-                throw ReaderError.GenericError(error: errno)
+                throw IOError.GenericError(code: errno)
             }
             var bytes = [Byte]()
             for i in 0..<size {
@@ -71,7 +71,7 @@ extension FileDescriptor {
         memset(buffer, 0, byteCount)
         let size = read(self.rawDescriptor, buffer, byteCount)
         if size < 0 {
-            throw ReaderError.GenericError(error: errno)
+            throw IOError.GenericError(code: errno)
         }
         var bytes = [Byte]()
         for i in 0..<size {

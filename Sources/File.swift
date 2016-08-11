@@ -65,7 +65,7 @@ public class PosixFile: File {
     public func close() throws {
         let result = syscall_close(rawDescriptor)
         if result != 0 {
-            throw SocketError.GenericError(code: errno)
+            throw IOError.GenericError(code: errno)
         }
         closed = true
     }

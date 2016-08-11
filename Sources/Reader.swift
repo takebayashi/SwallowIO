@@ -4,10 +4,6 @@
     import Glibc
 #endif
 
-enum ReaderError: Error {
-    case GenericError(error: Int32)
-}
-
 public protocol Reader: class {
 
     associatedtype Entry

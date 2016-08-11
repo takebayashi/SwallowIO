@@ -25,7 +25,7 @@ public class FileReader: Reader {
         memset(buffer, 0, maxLength)
         let size = recv(fileDescriptor.rawDescriptor, buffer, maxLength, 0)
         if size < 0 {
-            throw ReaderError.GenericError(error: errno)
+            throw IOError.GenericError(code: errno)
         }
         var bytes = [Entry]()
         for i in 0..<size {

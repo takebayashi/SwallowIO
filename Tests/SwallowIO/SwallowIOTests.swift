@@ -15,8 +15,11 @@ class SwallowIOTests: XCTestCase {
             XCTAssertEqual(data, expected)
             try file.close()
         }
-        catch let error {
-            XCTFail("operation failed: " + error.localizedDescription)
+        catch IOError.GenericError(let code) {
+            XCTFail("operation failed: " + code.description)
+        }
+        catch {
+            XCTFail("operation failed: unknown error")
         }
     }
 

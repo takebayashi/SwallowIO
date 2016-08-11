@@ -4,12 +4,6 @@
     import Glibc
 #endif
 
-public enum SocketError: Error {
-    typealias RawValue = Int32
-
-    case GenericError(code: Int32)
-}
-
 public protocol SocketAddress  {
 }
 
@@ -81,14 +75,14 @@ public class PosixSocket: Socket {
             return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in.self))))
         }
         if result != 0 {
-            throw SocketError.GenericError(code: result)
+            throw IOError.GenericError(code: result)
         }
     }
 
     public func listenConnection(backlog: Int32) throws {
         let result = listen(rawDescriptor, backlog)
         if result != 0 {
-            throw SocketError.GenericError(code: result)
+            throw IOError.GenericError(code: result)
         }
     }
 
@@ -100,7 +94,7 @@ public class PosixSocket: Socket {
         }
         let fd = wrapper(&addr, &addrlen)
         if fd < 0 {
-            throw SocketError.GenericError(code: fd)
+            throw IOError.GenericError(code: fd)
         }
         return (PosixSocket(rawDescriptor: fd), PosixSocketAddress(rawValue: addr))
     }
@@ -114,7 +108,7 @@ public class PosixSocket: Socket {
             result = Glibc.close(rawDescriptor)
         #endif
         if result != 0 {
-            throw SocketError.GenericError(code: errno)
+            throw IOError.GenericError(code: errno)
         }
         closed = true
     }
