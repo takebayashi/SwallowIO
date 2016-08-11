@@ -71,8 +71,8 @@ public class PosixSocket: Socket {
 
     public func bindAddress(address: PosixSocketAddress) throws {
         var mutable = address
-        let result = mutable.withUnsafeMutablePointer { pointer in
-            return bind(self.rawDescriptor, pointer, socklen_t(UInt8(sizeof(sockaddr_in.self))))
+        let result = mutable.withUnsafeMutablePointer { pointer, length in
+            return bind(self.rawDescriptor, pointer, length)
         }
         if result != 0 {
             throw IOError.GenericError(code: result)
@@ -96,7 +96,7 @@ public class PosixSocket: Socket {
         if fd < 0 {
             throw IOError.GenericError(code: fd)
         }
-        return (PosixSocket(rawDescriptor: fd), PosixSocketAddress(rawValue: addr))
+        return (PosixSocket(rawDescriptor: fd), PosixSocketAddress(rawValue: addr, length: addrlen))
     }
 
 
@@ -119,15 +119,26 @@ public class PosixSocket: Socket {
     }
 }
 
+public protocol PosixSocketAddressConvertible {
+    mutating func withUnsafeMutablePointer<R>(_ proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R
+}
+
+extension sockaddr_in: PosixSocketAddressConvertible {
+    public mutating func withUnsafeMutablePointer<R>(_ proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
+        let lambda = { (pointer: UnsafeMutablePointer<()>, length: socklen_t) in
+            return proc(UnsafeMutablePointer<sockaddr>(pointer), length)
+        }
+        return lambda(&self, socklen_t(sizeof(sockaddr_in.self)))
+    }
+}
+
 public struct PosixSocketAddress: SocketAddress {
 
-    var rawValue: sockaddr_in
+    var rawValue: PosixSocketAddressConvertible
+    var length: socklen_t
 
-    mutating func withUnsafeMutablePointer<R>(proc: (UnsafeMutablePointer<sockaddr>) -> R) -> R {
-        let wrapper = { (p: UnsafeMutablePointer<()>) -> R in
-            return proc(UnsafeMutablePointer<sockaddr>(p))
-        }
-        return wrapper(&rawValue)
+    mutating func withUnsafeMutablePointer<R>(proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
+        return rawValue.withUnsafeMutablePointer(proc)
     }
 
     static func htons(value: CUnsignedShort) -> CUnsignedShort {
@@ -135,26 +146,33 @@ public struct PosixSocketAddress: SocketAddress {
     }
 
     public init(port: UInt16, addressFamily: PosixSocket.AddressFamily = .Inet) {
-#if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
-        rawValue = sockaddr_in(
-            sin_len: __uint8_t(sizeof(sockaddr_in.self)),
-            sin_family: sa_family_t(addressFamily.rawValue),
-            sin_port: PosixSocketAddress.htons(value: port),
-            sin_addr: in_addr(s_addr: in_addr_t(0)),
-            sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
-        )
-#else
-        rawValue = sockaddr_in(
-            sin_family: sa_family_t(addressFamily.rawValue),
-            sin_port: PosixSocketAddress.htons(value: port),
-            sin_addr: in_addr(s_addr: in_addr_t(0)),
-            sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
-        )
-#endif
+        switch addressFamily {
+        case .Inet:
+            #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
+                rawValue = sockaddr_in(
+                    sin_len: __uint8_t(sizeof(sockaddr_in.self)),
+                    sin_family: sa_family_t(addressFamily.rawValue),
+                    sin_port: PosixSocketAddress.htons(value: port),
+                    sin_addr: in_addr(s_addr: in_addr_t(0)),
+                    sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
+                )
+            #else
+                rawValue = sockaddr_in(
+                    sin_family: sa_family_t(addressFamily.rawValue),
+                    sin_port: PosixSocketAddress.htons(value: port),
+                    sin_addr: in_addr(s_addr: in_addr_t(0)),
+                    sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
+                )
+            #endif
+            length = socklen_t(sizeof(sockaddr_in.self))
+        default:
+            fatalError("not implemented")
+        }
     }
 
-    public init(rawValue: sockaddr_in) {
+    public init(rawValue: sockaddr_in, length: socklen_t) {
         self.rawValue = rawValue
+        self.length = length
     }
 
 }
