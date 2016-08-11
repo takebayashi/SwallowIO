@@ -69,7 +69,7 @@ extension FileDescriptor {
     public func receive(upTo byteCount: Int, timingOut deadline: Double) throws -> Data {
         let buffer = UnsafeMutablePointer<Byte>.allocate(capacity: byteCount)
         memset(buffer, 0, byteCount)
-        let size = recv(self.rawDescriptor, buffer, byteCount, 0)
+        let size = read(self.rawDescriptor, buffer, byteCount)
         if size < 0 {
             throw ReaderError.GenericError(error: errno)
         }
