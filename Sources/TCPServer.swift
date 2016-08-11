@@ -1,25 +1,30 @@
-public protocol TCPServer {
+import C7
+
+public protocol SocketServer {
     associatedtype SocketType: Socket
+    
+    var socket: SocketType { get }
+    
+    init?(socket: SocketType, address: SocketType.AddressType)
+    func run(handler: (Stream) throws -> ()) throws
 }
 
-public class BlockingTCPServer: TCPServer {
-    public typealias SocketType = PosixSocket
+public protocol TCPServer: SocketServer {
+    associatedtype AcceptorType: SocketAcceptor
+    
+    var acceptor: AcceptorType { get }
+}
 
-    let socket: SocketType
-    let acceptor: BlockingSocketAcceptor
-
-    public init?(socket: SocketType, address: SocketType.AddressType) throws {
-        self.socket = socket
-        self.acceptor = try BlockingSocketAcceptor(socket: socket)
-        do {
-            try socket.bindAddress(address: address)
-            try socket.listenConnection(backlog: 10)
-        } catch {
-            return nil
+public extension TCPServer where AcceptorType.SocketType == SocketType {
+    public func run(handler: (Stream) throws -> ()) throws {
+        defer {
+            do {
+                try socket.close()
+            }
+            catch {
+                // ignore
+            }
         }
-    }
-
-    public func acceptClient(handler: (SocketType, SocketType.AddressType) throws -> ()) throws {
         while true {
             let (clientSocket, clientAddress) = try acceptor.accept()
             defer {
@@ -30,12 +35,26 @@ public class BlockingTCPServer: TCPServer {
                     // ignore
                 }
             }
-            try handler(clientSocket, clientAddress)
+            try handler(clientSocket)
         }
     }
+}
 
-    public func close() throws {
-        try socket.close()
+public class BlockingTCPServer: TCPServer {
+    public typealias SocketType = PosixSocket
+    public typealias AcceptorType = BlockingSocketAcceptor
+
+    public let socket: SocketType
+    public let acceptor: BlockingSocketAcceptor
+    
+    public required init?(socket: SocketType, address: SocketType.AddressType) {
+        self.socket = socket
+        do {
+            self.acceptor = try BlockingSocketAcceptor(socket: socket)
+            try socket.bindAddress(address: address)
+            try socket.listenConnection(backlog: 10)
+        } catch {
+            return nil
+        }
     }
-
 }
