@@ -7,3 +7,4 @@ before_install:
   - rm -rf swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a-ubuntu14.04
 script:
   - swift build -v
+  - swift test
