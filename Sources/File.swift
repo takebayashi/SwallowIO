@@ -8,3 +8,16 @@ import C7
 public protocol FileDescriptor: Stream, Closable {
     var rawDescriptor: Int32 { get }
 }
+
+public extension FileDescriptor {
+    @discardableResult
+    public func forceClose() -> Bool {
+        do {
+            try self.close()
+            return true
+        }
+        catch {
+            return false
+        }
+    }
+}

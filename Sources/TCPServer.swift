@@ -18,22 +18,12 @@ public protocol TCPServer: SocketServer {
 public extension TCPServer where AcceptorType.SocketType == SocketType {
     public func run(handler: (Stream) throws -> ()) throws {
         defer {
-            do {
-                try socket.close()
-            }
-            catch {
-                // ignore
-            }
+            socket.forceClose()
         }
         while true {
             let (clientSocket, clientAddress) = try acceptor.accept()
             defer {
-                do {
-                    try clientSocket.close()
-                }
-                catch {
-                    // ignore
-                }
+                clientSocket.forceClose()
             }
             try handler(clientSocket)
         }
