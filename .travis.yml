@@ -1,10 +1,10 @@
 sudo: required
 dist: trusty
 before_install:
-  - wget https://swift.org/builds/development/ubuntu1404/swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a/swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a-ubuntu14.04.tar.gz
-  - tar xzf swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a-ubuntu14.04.tar.gz
-  - sudo rsync -a swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a-ubuntu14.04/usr/ /usr/local/
-  - rm -rf swift-DEVELOPMENT-SNAPSHOT-2016-07-25-a-ubuntu14.04
+  - wget https://swift.org/builds/development/ubuntu1404/swift-DEVELOPMENT-SNAPSHOT-2016-08-04-a/swift-DEVELOPMENT-SNAPSHOT-2016-08-04-a-ubuntu14.04.tar.gz
+  - tar xzf swift-DEVELOPMENT-SNAPSHOT-2016-08-04-a-ubuntu14.04.tar.gz
+  - sudo rsync -a swift-DEVELOPMENT-SNAPSHOT-2016-08-04-a-ubuntu14.04/usr/ /usr/local/
+  - rm -rf swift-DEVELOPMENT-SNAPSHOT-2016-08-04-a-ubuntu14.04
 script:
   - swift build -v
   - swift test

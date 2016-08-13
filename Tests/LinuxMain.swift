@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwallowIOTestSuite
+@testable import SwallowIOTests
 
 XCTMain([
      testCase(SwallowIOTests.allTests),

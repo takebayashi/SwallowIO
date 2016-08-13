@@ -88,9 +88,9 @@ public class PosixSocket: Socket {
 
     public func acceptClient() throws -> (PosixSocket, PosixSocketAddress) {
         var addr = sockaddr_in()
-        var addrlen = socklen_t(sizeof(socklen_t.self))
+        var addrlen = socklen_t(MemoryLayout<socklen_t>.size)
         let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
-            return accept(self.rawDescriptor, UnsafeMutablePointer<sockaddr>(addrPtr), addrlenPtr)
+            return accept(self.rawDescriptor, UnsafeMutablePointer<sockaddr>(OpaquePointer(addrPtr)), addrlenPtr)
         }
         let fd = wrapper(&addr, &addrlen)
         if fd < 0 {
@@ -115,20 +115,20 @@ public class PosixSocket: Socket {
 
     public func setOption(option: Int32, value: Int32) {
         var val = value
-        setsockopt(rawDescriptor, SOL_SOCKET, option, &val, socklen_t(sizeof(Int32.self)))
+        setsockopt(rawDescriptor, SOL_SOCKET, option, &val, socklen_t(MemoryLayout<Int32>.size))
     }
 }
 
 public protocol PosixSocketAddressConvertible {
-    mutating func withUnsafeMutablePointer<R>(_ proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R
+    mutating func withUnsafeMutablePointer<R>(_ proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R
 }
 
 extension sockaddr_in: PosixSocketAddressConvertible {
-    public mutating func withUnsafeMutablePointer<R>(_ proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
+    public mutating func withUnsafeMutablePointer<R>(_ proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
         let lambda = { (pointer: UnsafeMutablePointer<()>, length: socklen_t) in
-            return proc(UnsafeMutablePointer<sockaddr>(pointer), length)
+            return proc(UnsafeMutablePointer<sockaddr>(OpaquePointer(pointer)), length)
         }
-        return lambda(&self, socklen_t(sizeof(sockaddr_in.self)))
+        return lambda(&self, socklen_t(MemoryLayout<sockaddr_in>.size))
     }
 }
 
@@ -137,7 +137,7 @@ public struct PosixSocketAddress: SocketAddress {
     var rawValue: PosixSocketAddressConvertible
     var length: socklen_t
 
-    mutating func withUnsafeMutablePointer<R>(proc: (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
+    mutating func withUnsafeMutablePointer<R>(proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
         return rawValue.withUnsafeMutablePointer(proc)
     }
 
@@ -150,7 +150,7 @@ public struct PosixSocketAddress: SocketAddress {
         case .Inet:
             #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
                 rawValue = sockaddr_in(
-                    sin_len: __uint8_t(sizeof(sockaddr_in.self)),
+                    sin_len: __uint8_t(MemoryLayout<sockaddr_in>.size),
                     sin_family: sa_family_t(addressFamily.rawValue),
                     sin_port: PosixSocketAddress.htons(value: port),
                     sin_addr: in_addr(s_addr: in_addr_t(0)),
@@ -164,7 +164,7 @@ public struct PosixSocketAddress: SocketAddress {
                     sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
                 )
             #endif
-            length = socklen_t(sizeof(sockaddr_in.self))
+            length = socklen_t(MemoryLayout<sockaddr_in>.size)
         default:
             fatalError("not implemented")
         }
