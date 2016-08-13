@@ -1,6 +1,6 @@
 import C7
 
-public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
+public class BufferedReader<R: Reader>: Reader where R.Entry: Equatable {
 
     public typealias Entry = [R.Entry]
 
@@ -62,7 +62,7 @@ public class BufferedReader<R: Reader where R.Entry: Equatable>: Reader {
 
 }
 
-public class LineBufferedReader<R: Reader where R.Entry == C7.Byte>: BufferedReader<R> {
+public class LineBufferedReader<R: Reader>: BufferedReader<R> where R.Entry == C7.Byte {
 
     override public init(reader: R, delimiter: R.Entry = C7.Byte(10)) {
         super.init(reader: reader, delimiter: delimiter)
