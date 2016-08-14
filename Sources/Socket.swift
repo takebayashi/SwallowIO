@@ -75,14 +75,14 @@ public class PosixSocket: Socket {
             return bind(self.rawDescriptor, pointer, length)
         }
         if result != 0 {
-            throw IOError.GenericError(code: result)
+            throw IOError.GenericError(code: errno)
         }
     }
 
     public func listenConnection(backlog: Int32) throws {
         let result = listen(rawDescriptor, backlog)
         if result != 0 {
-            throw IOError.GenericError(code: result)
+            throw IOError.GenericError(code: errno)
         }
     }
 
@@ -94,7 +94,7 @@ public class PosixSocket: Socket {
         }
         let fd = wrapper(&addr, &addrlen)
         if fd < 0 {
-            throw IOError.GenericError(code: fd)
+            throw IOError.GenericError(code: errno)
         }
         return (PosixSocket(rawDescriptor: fd), PosixSocketAddress(rawValue: addr, length: addrlen))
     }
