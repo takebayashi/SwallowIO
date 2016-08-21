@@ -10,7 +10,7 @@ import C7
 class SwallowIOTests: XCTestCase {
     func testFileRead() {
         let filename = "Tests/SwallowIOTests/Fixtures/HelloSwift.txt"
-        guard let file = PosixFile(name: filename, flags: FileOperationFlag.readOnly) else {
+        guard let file = PosixFile(name: filename, flags: .readOnly) else {
             XCTFail("failed to open " + filename)
             return
         }
