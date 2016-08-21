@@ -30,33 +30,45 @@ class SwallowIOTests: XCTestCase {
 
     func testFileWrite() {
         let filename = "SwiftOutput.txt"
-        
-        // write to file
-        guard let outFile = PosixFile(name: filename, flags: [.writeOnly, .create, .truncate]) else {
-            XCTFail("failed to open " + filename)
-            return
-        }
         do {
-            try outFile.send(C7.Data("Hello, World!"))
+            // write to file
+            guard let outFile = PosixFile(name: filename, flags: [.writeOnly, .create, .truncate]) else {
+                XCTFail("failed to open " + filename)
+                return
+            }
+            defer {
+                unlink(filename)
+            }
+            try outFile.send(C7.Data("Hello, World!\n"))
             try outFile.close()
-        }
-        catch IOError.GenericError(let code) {
-            XCTFail("operation failed: " + String(cString: strerror(code)))
-        }
-        catch {
-            XCTFail("operation failed: unknown error")
-        }
-        
-        // read from file
-        guard let inFile = PosixFile(name: filename, flags: [.readOnly]) else {
-            XCTFail("failed to open " + filename)
-            return
-        }
-        do {
+            
+            // read from file
+            guard let inFile = PosixFile(name: filename, flags: [.readOnly]) else {
+                XCTFail("failed to open " + filename)
+                return
+            }
             let data = try inFile.receive(upTo: 64)
-            let expected = C7.Data("Hello, World!")
+            let expected = C7.Data("Hello, World!\n")
             XCTAssertEqual(data, expected)
             try inFile.close()
+            
+            // append to file
+            guard let outFile2 = PosixFile(name: filename, flags: [.writeOnly, .append]) else {
+                XCTFail("failed to open " + filename)
+                return
+            }
+            try outFile2.send(C7.Data("Good Bye!"))
+            try outFile2.close()
+            
+            // read from file
+            guard let inFile2 = PosixFile(name: filename, flags: [.readOnly]) else {
+                XCTFail("failed to open " + filename)
+                return
+            }
+            let data2 = try inFile2.receive(upTo: 64)
+            let expected2 = C7.Data("Hello, World!\nGood Bye!")
+            XCTAssertEqual(data2, expected2)
+            try inFile2.close()
         }
         catch IOError.GenericError(let code) {
             XCTFail("operation failed: " + String(cString: strerror(code)))
@@ -64,9 +76,6 @@ class SwallowIOTests: XCTestCase {
         catch {
             XCTFail("operation failed: unknown error")
         }
-        
-        // cleanup
-        unlink(filename)
     }
 
     static var allTests : [(String, (SwallowIOTests) -> () throws -> Void)] {
