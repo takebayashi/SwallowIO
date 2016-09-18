@@ -78,7 +78,7 @@ public class PosixSocket: Socket {
     public func acceptClient() throws -> (PosixSocket, PosixSocketAddress) {
         var addr = sockaddr_in()
         var addrlen = socklen_t(MemoryLayout<socklen_t>.size)
-        let wrapper = { (addrPtr: UnsafeMutablePointer<()>, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
+        let wrapper = { (addrPtr: UnsafeMutableRawPointer, addrlenPtr: UnsafeMutablePointer<socklen_t>) -> Int32 in
             return accept(self.rawDescriptor, UnsafeMutablePointer<sockaddr>(OpaquePointer(addrPtr)), addrlenPtr)
         }
         let fd = wrapper(&addr, &addrlen)
@@ -114,7 +114,7 @@ public protocol PosixSocketAddressConvertible {
 
 extension sockaddr_in: PosixSocketAddressConvertible {
     public mutating func withUnsafeMutablePointer<R>(_ proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
-        let lambda = { (pointer: UnsafeMutablePointer<()>, length: socklen_t) in
+        let lambda = { (pointer: UnsafeMutableRawPointer, length: socklen_t) in
             return proc(UnsafeMutablePointer<sockaddr>(OpaquePointer(pointer)), length)
         }
         return lambda(&self, socklen_t(MemoryLayout<sockaddr_in>.size))
