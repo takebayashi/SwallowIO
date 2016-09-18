@@ -112,14 +112,18 @@ public protocol PosixSocketAddressConvertible {
     mutating func withUnsafeMutablePointer<R>(_ proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R
 }
 
-extension sockaddr_in: PosixSocketAddressConvertible {
+extension PosixSocketAddressConvertible {
     public mutating func withUnsafeMutablePointer<R>(_ proc: @escaping (UnsafeMutablePointer<sockaddr>, socklen_t) -> R) -> R {
         let lambda = { (pointer: UnsafeMutableRawPointer, length: socklen_t) in
             return proc(UnsafeMutablePointer<sockaddr>(OpaquePointer(pointer)), length)
         }
-        return lambda(&self, socklen_t(MemoryLayout<sockaddr_in>.size))
+        return lambda(&self, socklen_t(MemoryLayout<Self>.size))
     }
 }
+
+extension sockaddr_in: PosixSocketAddressConvertible {}
+extension sockaddr_un: PosixSocketAddressConvertible {}
+extension sockaddr_in6: PosixSocketAddressConvertible {}
 
 public struct PosixSocketAddress: SocketAddress {
     
