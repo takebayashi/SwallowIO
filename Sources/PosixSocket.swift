@@ -125,6 +125,23 @@ extension sockaddr_in: PosixSocketAddressConvertible {}
 extension sockaddr_un: PosixSocketAddressConvertible {}
 extension sockaddr_in6: PosixSocketAddressConvertible {}
 
+extension sockaddr_in {
+    public init(address: UInt32, port: UInt16) {
+        #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
+        self.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        self.sin_family = sa_family_t(AF_INET)
+        self.sin_port = PosixSocketAddress.htons(value: port)
+        self.sin_addr = in_addr(s_addr: in_addr_t(address))
+        self.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
+        #else
+        self.sin_family = sa_family_t(AF_INET)
+        self.sin_port = PosixSocketAddress.htons(value: port)
+        self.sin_addr = in_addr(s_addr: in_addr_t(address))
+        self.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
+        #endif
+    }
+}
+
 public struct PosixSocketAddress: SocketAddress {
     
     var rawValue: PosixSocketAddressConvertible
