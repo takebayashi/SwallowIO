@@ -23,20 +23,6 @@ extension PosixSocketAddressConvertible {
     }
 }
 
-extension sockaddr_in: PosixSocketAddressConvertible {}
-
-extension sockaddr_in {
-    public init(address: UInt32, port: UInt16) {
-        #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
-            self.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
-        #endif
-        self.sin_family = sa_family_t(AF_INET)
-        self.sin_port = port.htons()
-        self.sin_addr = in_addr(s_addr: in_addr_t(address))
-        self.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
-    }
-}
-
 public struct PosixSocketAddress: SocketAddress {
     var rawValue: PosixSocketAddressConvertible
     var length: socklen_t
@@ -51,9 +37,43 @@ public struct PosixSocketAddress: SocketAddress {
     }
 }
 
+extension sockaddr_in: PosixSocketAddressConvertible {}
+
 extension PosixSocketAddress {
     public init(_ address: sockaddr_in) {
         self.rawValue = address
         self.length = socklen_t(MemoryLayout<sockaddr_in>.size)
+    }
+
+    public init(address: UInt32, port: UInt16) {
+        var addr = sockaddr_in()
+        #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
+            addr.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        #endif
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = port.htons()
+        addr.sin_addr = in_addr(s_addr: in_addr_t(address))
+        self.init(addr)
+    }
+}
+
+extension sockaddr_un: PosixSocketAddressConvertible {}
+
+extension PosixSocketAddress {
+    public init(_ address: sockaddr_un) {
+        self.rawValue = address
+        self.length = socklen_t(MemoryLayout<sockaddr_un>.size)
+    }
+
+    public init(path: String) {
+        var addr = sockaddr_un()
+        #if os(OSX) || os(tvOS) || os(watchOS) || os(iOS)
+            addr.sun_len = UInt8(MemoryLayout<sockaddr_un>.size)
+        #endif
+        addr.sun_family = sa_family_t(AF_UNIX)
+        path.withCString { string -> Void in
+            strcpy(&addr.sun_path.0, string)
+        }
+        self.init(addr)
     }
 }
